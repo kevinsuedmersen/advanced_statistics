@@ -9,22 +9,21 @@ from mcmc.sampling_algorithms import MetropolisSampler
 from mcmc.sampling_distributions import NormalSamplingDistribution
 
 if __name__ == '__main__':
+    # Assume we made the following observations
+    data = st.norm(450, 50).rvs(25)
+    observations = DatasetSerializer.from_data(data)
+
     # Config
     WORK_DIR = Path("results")
     RESULTS_DIR = WORK_DIR / Path(datetime.now().strftime("%Y_%m_%d__%H_%M_%S"))
     STEPS = 5_000
     PRIOR_MEAN = 500
     PRIOR_STANDARD_DEVIATION = 70
-    SAMPLING_STANDARD_DEVIATION = 100
+    SAMPLING_STANDARD_DEVIATION = 25
 
-    # Create work dir
+    # Start the sampling process
     if not RESULTS_DIR.exists():
         RESULTS_DIR.mkdir()
-
-    # Assume we made the following observations
-    data = st.norm(450, 50).rvs(25)
-    observations = DatasetSerializer.from_data(data)
-
     sampling_distribution = NormalSamplingDistribution(
         PRIOR_MEAN, PRIOR_STANDARD_DEVIATION, SAMPLING_STANDARD_DEVIATION
     )

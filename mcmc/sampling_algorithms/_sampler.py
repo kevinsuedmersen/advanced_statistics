@@ -13,3 +13,7 @@ class Sampler:
     @abstractmethod
     def visualize_markov_chain(self, work_dir: Path) -> None:
         pass
+
+    @abstractmethod
+    def __repr__(self) -> str:
+        pass

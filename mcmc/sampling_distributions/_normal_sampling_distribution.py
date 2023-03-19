@@ -35,6 +35,16 @@ class NormalSamplingDistribution(SamplingDistribution):
         self._prior_standard_deviation = prior_standard_deviation
         self._sampling_standard_deviation = sampling_standard_deviation
 
+    def __repr__(self) -> str:
+        string_repr = (
+            "NormalSamplingDistribution("
+            f"prior_mean={self._prior_mean}, "
+            f"prior_standard_deviation={self._prior_standard_deviation}, "
+            f"sampling_standard_deviation={self._sampling_standard_deviation}"
+            ")"
+        )
+        return string_repr
+
     def generate_initial_random_sample(self) -> Sample:
         """
         Generate a first sample, usually that sample is "close" to the mean.

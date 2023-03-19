@@ -6,6 +6,9 @@ from mcmc.data_objects import Sample
 
 class SamplingDistribution(ABC):
     """Sampling distribution interface."""
+    @abstractmethod
+    def __repr__(self) -> str:
+        pass
 
     @abstractmethod
     def generate_initial_random_sample(self) -> Sample:
