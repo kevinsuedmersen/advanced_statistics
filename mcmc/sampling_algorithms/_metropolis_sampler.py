@@ -46,20 +46,27 @@ class MetropolisSampler(Sampler):
         previous_sample = self._sampling_distribution.generate_initial_random_sample()
         self._trace = Trace([previous_sample])
 
-        print(f"Generating a Markov Chain with {self._total_steps} samples (inclusing {self._warumup_steps} warmup steps).")
+        print(
+            f"Generating a Markov Chain with {self._total_steps} samples "
+            f"(including {self._warumup_steps} warmup steps)."
+        )
         for step in tqdm(range(self._total_steps - 1)):  # -1 because we added an initial sample before
             next_sample = self._sampling_distribution.generate_next_random_sample_based_on(previous_sample)
-            previous_likelihood, next_likelihood = self._compute_likelihoods(previous_sample, next_sample, observations)
+            previous_likelihood, next_likelihood = self._compute_likelihoods(
+                previous_sample, next_sample, observations
+            )
             previous_prior, next_prior = self._compute_priors(previous_sample, next_sample)
 
             if self._accept_new_sample(previous_likelihood, previous_prior, next_likelihood, next_prior):
-                self._trace.add_sample(next_sample)
                 previous_sample = next_sample
-            else:
-                self._trace.add_sample(previous_sample)
+            self._trace.add_sample(previous_sample)
 
             if (step % 1_000) == 0:
-                print(f"Currently accepted samples: {self.accepted_samples}, rejected samples: {self.rejected_samples}, acceptance ratio: {self.acceptance_ratio}")
+                print(
+                    f"Currently accepted samples: {self.accepted_samples}, "
+                    f"rejected samples: {self.rejected_samples}, "
+                    f"acceptance ratio: {self.acceptance_ratio}"
+                )
 
         # Discard the first warmup steps
         self._trace.slice_samples(self._warumup_steps)
@@ -75,14 +82,19 @@ class MetropolisSampler(Sampler):
     def _plot_histogram(work_dir: Path, data: npt.NDArray, var_idx: int) -> None:
         plt.hist(data, bins=30, density=True)
         plt.title(f"Histogram of the trace's {var_idx + 1}th variable using the Metropolis Sampler")
+        plt.xlabel(f"Values of the trace's {var_idx + 1}th variable")
+        plt.ylabel(f"Relative frequencies")
         filepath = work_dir / Path(f"trace_histogram_{var_idx}.png")
         plt.savefig(filepath)
         print(f"Saved histogram to {filepath=}.")
 
     def _plot_trajectory(self, work_dir: Path, data: npt.NDArray, var_idx: int) -> None:
+        plt.figure(figsize=(12, 6))
         plt.plot(data)
         plt.title(f"Trajectors of the trace's {var_idx + 1}th variable using the Metropolis Sampler")
         plt.xlim(0, (self._total_steps - self._warumup_steps))
+        plt.xlabel(f"Number of sampling steps after removing {self._warumup_steps} warmup steps")
+        plt.ylabel(f"Values of the trace's {var_idx + 1}th variable")
         filepath = work_dir / Path(f"trace_trajectory_{var_idx}.png")
         plt.savefig(filepath)
         print(f"Saved trajectory to {filepath=}.")
