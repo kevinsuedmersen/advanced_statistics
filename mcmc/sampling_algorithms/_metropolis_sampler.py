@@ -74,27 +74,31 @@ class MetropolisSampler(Sampler):
 
     def visualize_markov_chain(self, work_dir: Path) -> None:
         # TODO (suggestion): Consider injecting a visualizer instance
+        subtitle = f"Accepted samples: {self.accepted_samples}, Rejected samples: {self.rejected_samples}, Acceptance ratio: {self.acceptance_ratio:.2f}"
         for var_idx, var_data in enumerate(self._trace.data.T):
-            self._plot_histogram(work_dir, var_data, var_idx)
-            self._plot_trajectory(work_dir, var_data, var_idx)
+            self._plot_histogram(work_dir, var_data, var_idx, subtitle)
+            self._plot_trajectory(work_dir, var_data, var_idx, subtitle)
 
     @staticmethod
-    def _plot_histogram(work_dir: Path, data: npt.NDArray, var_idx: int) -> None:
+    def _plot_histogram(work_dir: Path, data: npt.NDArray, var_idx: int, subtitle: str) -> None:
+        plt.figure(figsize=(12, 6))
         plt.hist(data, bins=30, density=True)
-        plt.title(f"Histogram of the trace's {var_idx + 1}th variable using the Metropolis Sampler")
+        plt.title(f"Histogram of the trace's {var_idx + 1}th variable using the Metropolis Sampler\n{subtitle}")
         plt.xlabel(f"Values of the trace's {var_idx + 1}th variable")
         plt.ylabel(f"Relative frequencies")
+        plt.tight_layout()
         filepath = work_dir / Path(f"trace_histogram_{var_idx}.png")
         plt.savefig(filepath)
         print(f"Saved histogram to {filepath=}.")
 
-    def _plot_trajectory(self, work_dir: Path, data: npt.NDArray, var_idx: int) -> None:
+    def _plot_trajectory(self, work_dir: Path, data: npt.NDArray, var_idx: int, subtitle: str) -> None:
         plt.figure(figsize=(12, 6))
         plt.plot(data)
-        plt.title(f"Trajectors of the trace's {var_idx + 1}th variable using the Metropolis Sampler")
+        plt.title(f"Trajectors of the trace's {var_idx + 1}th variable using the Metropolis Sampler\n{subtitle}")
         plt.xlim(0, (self._total_steps - self._warumup_steps))
         plt.xlabel(f"Number of sampling steps after removing {self._warumup_steps} warmup steps")
         plt.ylabel(f"Values of the trace's {var_idx + 1}th variable")
+        plt.tight_layout()
         filepath = work_dir / Path(f"trace_trajectory_{var_idx}.png")
         plt.savefig(filepath)
         print(f"Saved trajectory to {filepath=}.")

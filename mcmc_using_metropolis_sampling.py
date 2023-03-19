@@ -1,4 +1,5 @@
 """Kontrollaufgabe 3.5"""
+from datetime import datetime
 from pathlib import Path
 
 import scipy.stats as st
@@ -8,15 +9,21 @@ from mcmc.sampling_algorithms import MetropolisSampler
 from mcmc.sampling_distributions import NormalSamplingDistribution
 
 if __name__ == '__main__':
-    # Assume we made the following observations
-    data = st.norm(450, 50).rvs(25)
-    observations = DatasetSerializer.from_data(data)
-
-    RESULTS_DIR = Path(".") / Path("results")
-    STEPS = 1_000
+    # Config
+    WORK_DIR = Path("results")
+    RESULTS_DIR = WORK_DIR / Path(datetime.now().strftime("%Y_%m_%d__%H_%M_%S"))
+    STEPS = 5_000
     PRIOR_MEAN = 500
     PRIOR_STANDARD_DEVIATION = 70
     SAMPLING_STANDARD_DEVIATION = 100
+
+    # Create work dir
+    if not RESULTS_DIR.exists():
+        RESULTS_DIR.mkdir()
+
+    # Assume we made the following observations
+    data = st.norm(450, 50).rvs(25)
+    observations = DatasetSerializer.from_data(data)
 
     sampling_distribution = NormalSamplingDistribution(
         PRIOR_MEAN, PRIOR_STANDARD_DEVIATION, SAMPLING_STANDARD_DEVIATION
