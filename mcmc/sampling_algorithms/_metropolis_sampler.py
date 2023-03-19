@@ -14,13 +14,29 @@ class MetropolisSampler(Sampler):
             sampling_distribution: SamplingDistribution,
             total_steps: int,
             warumup_steps: int = 1_000,
-            epsilon: float = 1e-307
+            epsilon: float = 0.,  # epsilon could als be 1e-307
+            verbose: bool = False
     ):
         self._sampling_distribution = sampling_distribution
         self._total_steps = warumup_steps + total_steps
         self._warumup_steps = warumup_steps
         self._epsilon = epsilon
         self._trace = []
+        self._accepted_samples = 0
+        self._rejected_samples = 0
+        self._verbose = verbose
+
+    @property
+    def accepted_samples(self) -> int:
+        return self._accepted_samples
+
+    @property
+    def rejected_samples(self) -> int:
+        return self._rejected_samples
+
+    @property
+    def acceptance_ratio(self) -> float:
+        return self._accepted_samples / (self._accepted_samples + self._rejected_samples)
 
     def generate_markov_chain(self, observations: Observations) -> List[Sample]:
         # Start the markov chain with an initial sample
@@ -28,7 +44,7 @@ class MetropolisSampler(Sampler):
         self._trace.append(previous_sample)
 
         print(f"Generating a Markov Chain with {self._total_steps} samples (inclusing {self._warumup_steps} warmup steps).")
-        for _ in tqdm(range(self._total_steps)):
+        for step in tqdm(range(self._total_steps)):
             next_sample = self._sampling_distribution.generate_next_random_sample_based_on(previous_sample)
             previous_likelihood, next_likelihood = self._compute_likelihoods(previous_sample, next_sample, observations)
             previous_prior, next_prior = self._compute_priors(previous_sample, next_sample)
@@ -38,6 +54,9 @@ class MetropolisSampler(Sampler):
                 previous_sample = next_sample
             else:
                 self._trace.append(previous_sample)
+
+            if (step % 1_000) == 0:
+                print(f"Currently accepted samples: {self.accepted_samples}, rejected samples: {self.rejected_samples}, acceptance ratio: {self.acceptance_ratio}")
 
         # Discard the first warmup steps
         self._trace = self._trace[self._warumup_steps:]
@@ -81,11 +100,14 @@ class MetropolisSampler(Sampler):
 
         # Handle potential division by zero errors
         if previous_p == 0:
-            print(f"{previous_p=} is zero ==> Adding {self._epsilon} to it. At the same time, {next_p=}")
+            if self._verbose:
+                print(f"{previous_p=} is zero ==> Adding {self._epsilon} to it. At the same time, {next_p=}")
             previous_p += self._epsilon
 
         # Accept the next sample with a certain probability
         if np.random.randn() < (next_p / previous_p):
+            self._accepted_samples += 1
             return True
         else:
+            self._rejected_samples += 1
             return False

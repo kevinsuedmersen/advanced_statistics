@@ -16,6 +16,8 @@ if __name__ == '__main__':
     SAMPLING_STANDARD_DEVIATION = 100
 
     sampling_distribution = NormalSamplingDistribution(PRIOR_MEAN, PRIOR_STANDARD_DEVIATION, SAMPLING_STANDARD_DEVIATION)
-    sampler = MetropolisSampler(sampling_distribution, STEPS)
-    trace = sampler.generate_markov_chain(observations)
-    print(f"{trace=}")
+    metropolis_sampler = MetropolisSampler(sampling_distribution, STEPS)
+    trace = metropolis_sampler.generate_markov_chain(observations)
+    print(f"{metropolis_sampler.accepted_samples=}")
+    print(f"{metropolis_sampler.rejected_samples=}")
+    print(f"{metropolis_sampler.acceptance_ratio=}")
