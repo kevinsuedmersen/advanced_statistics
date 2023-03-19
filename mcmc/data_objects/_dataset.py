@@ -8,7 +8,7 @@ from mcmc.data_objects._sample import Sample
 
 
 @dataclass
-class Trace:
+class Dataset:
     samples: List[Sample] = field(default_factory=list)
 
     def __post_init__(self):

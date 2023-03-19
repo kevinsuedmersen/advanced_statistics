@@ -3,14 +3,14 @@ from pathlib import Path
 
 import scipy.stats as st
 
-from mcmc.data_objects import Observations
+from mcmc.data_object_serializers import DatasetSerializer
 from mcmc.sampling_algorithms import MetropolisSampler
 from mcmc.sampling_distributions import NormalSamplingDistribution
 
 if __name__ == '__main__':
     # Assume we made the following observations
     data = st.norm(450, 50).rvs(25)
-    observations = Observations(data)
+    observations = DatasetSerializer.from_data(data)
 
     RESULTS_DIR = Path(".") / Path("results")
     STEPS = 1_000

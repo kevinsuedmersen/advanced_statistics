@@ -6,7 +6,7 @@ import numpy as np
 import numpy.typing as npt
 from tqdm import tqdm
 
-from mcmc.data_objects import Sample, Observations, Probability, Trace
+from mcmc.data_objects import Sample, Probability, Dataset
 from mcmc.sampling_algorithms import Sampler
 from mcmc.sampling_distributions import SamplingDistribution
 
@@ -41,10 +41,10 @@ class MetropolisSampler(Sampler):
     def acceptance_ratio(self) -> float:
         return self._accepted_samples / (self._accepted_samples + self._rejected_samples)
 
-    def generate_markov_chain(self, observations: Observations) -> Trace:
+    def generate_markov_chain(self, observations: Dataset) -> Dataset:
         # Start the markov chain with an initial sample
         previous_sample = self._sampling_distribution.generate_initial_random_sample()
-        self._trace = Trace([previous_sample])
+        self._trace = Dataset([previous_sample])
 
         print(
             f"Generating a Markov Chain with {self._total_steps} samples "
@@ -103,7 +103,7 @@ class MetropolisSampler(Sampler):
             self,
             previous_sample: Sample,
             next_sample: Sample,
-            observations: Observations
+            observations: Dataset
     ) -> Tuple[Probability, Probability]:
         """Compute likelihoods of previous and next sample"""
         previous_likelihood = self._sampling_distribution.compute_likelihood_based_on(

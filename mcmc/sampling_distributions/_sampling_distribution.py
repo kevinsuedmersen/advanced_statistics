@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 
-from mcmc.data_objects import Observations
-from mcmc.data_objects import Probability
+from mcmc.data_objects import Probability, Dataset
 from mcmc.data_objects import Sample
 
 
@@ -17,7 +16,7 @@ class SamplingDistribution(ABC):
         pass
 
     @abstractmethod
-    def compute_likelihood_based_on(self, sample: Sample, observations: Observations) -> Probability:
+    def compute_likelihood_based_on(self, sample: Sample, observations: Dataset) -> Probability:
         pass
 
     @abstractmethod

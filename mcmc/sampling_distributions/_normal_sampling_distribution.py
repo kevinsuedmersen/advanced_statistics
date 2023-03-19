@@ -1,8 +1,8 @@
-from typing import List, Optional
+from typing import Optional
 
 import scipy.stats as st
 
-from mcmc.data_objects import Probability, Observations
+from mcmc.data_objects import Probability, Dataset
 from mcmc.data_objects import Sample
 from mcmc.sampling_distributions._sampling_distribution import SamplingDistribution
 
@@ -62,7 +62,7 @@ class NormalSamplingDistribution(SamplingDistribution):
         value = st.norm(sample.value, sd).rvs()
         return Sample(value)
 
-    def compute_likelihood_based_on(self, sample: Sample, observations: Observations) -> Probability:
+    def compute_likelihood_based_on(self, sample: Sample, observations: Dataset) -> Probability:
         """
         Compute the likelihoods, i.e. the probabilites of observing the data with a normal
         distribution centered around the given sample.
