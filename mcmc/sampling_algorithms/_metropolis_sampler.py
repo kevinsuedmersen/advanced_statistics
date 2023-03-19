@@ -48,7 +48,7 @@ class MetropolisSampler(Sampler):
     def generate_markov_chain(self, observations: Dataset) -> Dataset:
         # Start the markov chain with an initial sample
         previous_sample = self._sampling_distribution.generate_initial_random_sample()
-        self._trace = Dataset([previous_sample])
+        self._trace = Dataset([previous_sample])  # TODO (todo): Use the DatasetSerializer for instantiating a dataset
 
         print(
             f"Generating a Markov Chain with {self._total_steps} samples "
@@ -77,7 +77,6 @@ class MetropolisSampler(Sampler):
         return self._trace
 
     def visualize_markov_chain(self, work_dir: Path) -> None:
-        # TODO (suggestion): Consider injecting a visualizer instance
         subtitle = (
             f"Accepted samples: {self.accepted_samples}, "
             f"Rejected samples: {self.rejected_samples}, "
@@ -90,6 +89,7 @@ class MetropolisSampler(Sampler):
 
     @staticmethod
     def _plot_histogram(work_dir: Path, data: npt.NDArray, var_idx: int, subtitle: str) -> None:
+        # TODO (suggestion): Consider injecting a visualizer instance with an histogram method
         plt.figure(figsize=(16, 8))
         plt.hist(data, bins=30, density=True)
         plt.title(f"Histogram of the trace's {var_idx + 1}th variable\n{subtitle}")
@@ -101,6 +101,7 @@ class MetropolisSampler(Sampler):
         print(f"Saved histogram to {filepath=}.")
 
     def _plot_trajectory(self, work_dir: Path, data: npt.NDArray, var_idx: int, subtitle: str) -> None:
+        # TODO (suggestion): Consider injecting a visualizer instance with a line plot method
         plt.figure(figsize=(16, 8))
         plt.plot(data)
         plt.title(f"Trajectors of the trace's {var_idx + 1}th variable using the Metropolis Sampler\n{subtitle}")
@@ -155,7 +156,7 @@ class MetropolisSampler(Sampler):
             previous_p += self._epsilon
 
         # Accept the next sample with a certain probability
-        if np.random.randn() < (next_p / previous_p):
+        if np.random.rand() < (next_p / previous_p):
             self._accepted_samples += 1
             return True
         else:

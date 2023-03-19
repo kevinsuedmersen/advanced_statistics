@@ -19,7 +19,7 @@ if __name__ == '__main__':
     STEPS = 5_000
     PRIOR_MEAN = 500
     PRIOR_STANDARD_DEVIATION = 70
-    SAMPLING_STANDARD_DEVIATION = 25
+    SAMPLING_STANDARD_DEVIATION = 100
 
     # Start the sampling process
     if not RESULTS_DIR.exists():
@@ -33,3 +33,5 @@ if __name__ == '__main__':
     print(f"{metropolis_sampler.rejected_samples=}")
     print(f"{metropolis_sampler.acceptance_ratio=}")
     metropolis_sampler.visualize_markov_chain(RESULTS_DIR)
+
+    # TODO (todo): Make the multi-variate case the default. (Then, the uni-variate case is a special case of the multi-variate case).
