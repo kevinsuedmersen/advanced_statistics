@@ -67,21 +67,25 @@ class MetropolisSampler(Sampler):
 
     def visualize_markov_chain(self, work_dir: Path) -> None:
         # TODO (suggestion): Consider injecting a visualizer instance
-        for var_data in self._trace.data.T:
-            self._plot_histogram(work_dir, var_data)
+        for var_idx, var_data in enumerate(self._trace.data.T):
+            self._plot_histogram(work_dir, var_data, var_idx)
+            self._plot_trajectory(work_dir, var_data, var_idx)
 
     @staticmethod
-    def _plot_histogram(work_dir: Path, data: npt.NDArray) -> None:
+    def _plot_histogram(work_dir: Path, data: npt.NDArray, var_idx: int) -> None:
         plt.hist(data, bins=30, density=True)
-        plt.title("Histogram of the trace using the Metropolis Sampler")
-        plt.legend()
-        plt.tight_layout()
-        filepath = work_dir / Path("trace_histogram.png")
+        plt.title(f"Histogram of the trace's {var_idx + 1}th variable using the Metropolis Sampler")
+        filepath = work_dir / Path(f"trace_histogram_{var_idx}.png")
         plt.savefig(filepath)
         print(f"Saved histogram to {filepath=}.")
 
-    def _plot_trajectory(self):
-        pass
+    def _plot_trajectory(self, work_dir: Path, data: npt.NDArray, var_idx: int) -> None:
+        plt.plot(data)
+        plt.title(f"Trajectors of the trace's {var_idx + 1}th variable using the Metropolis Sampler")
+        plt.xlim(0, (self._total_steps - self._warumup_steps))
+        filepath = work_dir / Path(f"trace_trajectory_{var_idx}.png")
+        plt.savefig(filepath)
+        print(f"Saved trajectory to {filepath=}.")
 
     def _compute_likelihoods(
             self,
