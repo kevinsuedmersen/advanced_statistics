@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Union
 
 
 @dataclass
@@ -14,4 +14,4 @@ class Sample:
         If `value` is a list of floats, it still represents one sample, but
         this time, it comes from a multi-variate distribution.
     """
-    value: float | List[float] = field(repr=True, default_factory=list)
+    value: Union[float, List[float]] = field(repr=True, default_factory=list)

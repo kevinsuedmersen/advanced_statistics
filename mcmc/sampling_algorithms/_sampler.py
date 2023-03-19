@@ -1,10 +1,15 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+from pathlib import Path
 from typing import List
 
-from mcmc.data_objects import Sample, Observations
+from mcmc.data_objects import Observations, Trace
 
 
 class Sampler:
     @abstractmethod
-    def generate_markov_chain(self, observations: List[Observations]) -> List[Sample]:
+    def generate_markov_chain(self, observations: List[Observations]) -> Trace:
+        pass
+
+    @abstractmethod
+    def visualize_markov_chain(self, work_dir: Path) -> None:
         pass

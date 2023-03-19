@@ -1,10 +1,13 @@
-from typing import List, Tuple
+from pathlib import Path
+from typing import Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
 from tqdm import tqdm
 
-from mcmc.data_objects import Sample, Observations, Probability
-from mcmc.sampling_algorithms._sampler import Sampler
+from mcmc.data_objects import Sample, Observations, Probability, Trace
+from mcmc.sampling_algorithms import Sampler
 from mcmc.sampling_distributions import SamplingDistribution
 
 
@@ -21,10 +24,10 @@ class MetropolisSampler(Sampler):
         self._total_steps = warumup_steps + total_steps
         self._warumup_steps = warumup_steps
         self._epsilon = epsilon
-        self._trace = []
+        self._verbose = verbose
+        self._trace = None
         self._accepted_samples = 0
         self._rejected_samples = 0
-        self._verbose = verbose
 
     @property
     def accepted_samples(self) -> int:
@@ -38,29 +41,47 @@ class MetropolisSampler(Sampler):
     def acceptance_ratio(self) -> float:
         return self._accepted_samples / (self._accepted_samples + self._rejected_samples)
 
-    def generate_markov_chain(self, observations: Observations) -> List[Sample]:
+    def generate_markov_chain(self, observations: Observations) -> Trace:
         # Start the markov chain with an initial sample
         previous_sample = self._sampling_distribution.generate_initial_random_sample()
-        self._trace.append(previous_sample)
+        self._trace = Trace([previous_sample])
 
         print(f"Generating a Markov Chain with {self._total_steps} samples (inclusing {self._warumup_steps} warmup steps).")
-        for step in tqdm(range(self._total_steps)):
+        for step in tqdm(range(self._total_steps - 1)):  # -1 because we added an initial sample before
             next_sample = self._sampling_distribution.generate_next_random_sample_based_on(previous_sample)
             previous_likelihood, next_likelihood = self._compute_likelihoods(previous_sample, next_sample, observations)
             previous_prior, next_prior = self._compute_priors(previous_sample, next_sample)
 
             if self._accept_new_sample(previous_likelihood, previous_prior, next_likelihood, next_prior):
-                self._trace.append(next_sample)
+                self._trace.add_sample(next_sample)
                 previous_sample = next_sample
             else:
-                self._trace.append(previous_sample)
+                self._trace.add_sample(previous_sample)
 
             if (step % 1_000) == 0:
                 print(f"Currently accepted samples: {self.accepted_samples}, rejected samples: {self.rejected_samples}, acceptance ratio: {self.acceptance_ratio}")
 
         # Discard the first warmup steps
-        self._trace = self._trace[self._warumup_steps:]
+        self._trace.slice_samples(self._warumup_steps)
         return self._trace
+
+    def visualize_markov_chain(self, work_dir: Path) -> None:
+        # TODO (suggestion): Consider injecting a visualizer instance
+        for var_data in self._trace.data.T:
+            self._plot_histogram(work_dir, var_data)
+
+    @staticmethod
+    def _plot_histogram(work_dir: Path, data: npt.NDArray) -> None:
+        plt.hist(data, bins=30, density=True)
+        plt.title("Histogram of the trace using the Metropolis Sampler")
+        plt.legend()
+        plt.tight_layout()
+        filepath = work_dir / Path("trace_histogram.png")
+        plt.savefig(filepath)
+        print(f"Saved histogram to {filepath=}.")
+
+    def _plot_trajectory(self):
+        pass
 
     def _compute_likelihoods(
             self,

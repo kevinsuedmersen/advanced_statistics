@@ -1,4 +1,6 @@
 """Kontrollaufgabe 3.5"""
+from pathlib import Path
+
 import scipy.stats as st
 
 from mcmc.data_objects import Observations
@@ -10,7 +12,8 @@ if __name__ == '__main__':
     data = st.norm(450, 50).rvs(25)
     observations = Observations(data)
 
-    STEPS = 5_000
+    RESULTS_DIR = Path(".") / Path("results")
+    STEPS = 1_000
     PRIOR_MEAN = 500
     PRIOR_STANDARD_DEVIATION = 70
     SAMPLING_STANDARD_DEVIATION = 100
@@ -21,3 +24,4 @@ if __name__ == '__main__':
     print(f"{metropolis_sampler.accepted_samples=}")
     print(f"{metropolis_sampler.rejected_samples=}")
     print(f"{metropolis_sampler.acceptance_ratio=}")
+    metropolis_sampler.visualize_markov_chain(RESULTS_DIR)
