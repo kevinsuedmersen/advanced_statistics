@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import scipy.stats as st
 
@@ -7,10 +7,33 @@ from mcmc.data_objects import Sample
 from mcmc.sampling_distributions._sampling_distribution import SamplingDistribution
 
 
-class UnivariateNormalSamplingDistribution(SamplingDistribution):
-    def __init__(self, mean: float, standard_deviation: float):
-        self._mean = mean
-        self._standard_deviation = standard_deviation
+class NormalSamplingDistribution(SamplingDistribution):
+    """Univariate normal distribution used as a distribution from which to generate samples.
+
+    Parameters
+    ----------
+    prior_mean: float
+        Prior mean.
+    prior_standard_deviation: float
+        Prior standard deviation.
+    sampling_standard_deviation: Optional[float], default=None
+        If required, a separate standard deviation can be specified for generating the next sample.
+        If None, the prior standard deviation will be used.
+
+    Notes
+    -----
+    * Currently, only the uni-variate case is implemented. For multi-variate distributions, another
+        layer of abstraction might be necessary.
+    """
+    def __init__(
+            self,
+            prior_mean: float,
+            prior_standard_deviation: float,
+            sampling_standard_deviation: Optional[float] = None
+    ):
+        self._prior_mean = prior_mean
+        self._prior_standard_deviation = prior_standard_deviation
+        self._sampling_standard_deviation = sampling_standard_deviation
 
     def generate_initial_random_sample(self) -> Sample:
         """
@@ -20,7 +43,7 @@ class UnivariateNormalSamplingDistribution(SamplingDistribution):
         -------
         Sample
         """
-        return Sample(value=self._mean)
+        return Sample(value=self._prior_mean)
 
     def generate_next_random_sample_based_on(self, sample: Sample) -> Sample:
         """
@@ -35,7 +58,8 @@ class UnivariateNormalSamplingDistribution(SamplingDistribution):
         -------
         Sample
         """
-        value = st.norm(sample.value, self._standard_deviation).rvs()
+        sd = self._sampling_standard_deviation or self._prior_standard_deviation
+        value = st.norm(sample.value, sd).rvs()
         return Sample(value)
 
     def compute_likelihood_based_on(self, sample: Sample, observations: Observations) -> Probability:
@@ -54,7 +78,7 @@ class UnivariateNormalSamplingDistribution(SamplingDistribution):
         -------
         Probability
         """
-        likelihood = st.norm(sample.value, self._standard_deviation).pdf(observations.data).prod()
+        likelihood = st.norm(sample.value, self._prior_standard_deviation).pdf(observations.data).prod()
         return Probability(likelihood)
 
     def compute_prior_based_on(self, sample: Sample) -> Probability:
@@ -70,5 +94,5 @@ class UnivariateNormalSamplingDistribution(SamplingDistribution):
         -------
         Probability
         """
-        prior = st.norm(self._mean, self._standard_deviation).pdf(sample.value)
+        prior = st.norm(self._prior_mean, self._prior_standard_deviation).pdf(sample.value)
         return Probability(prior)

@@ -3,7 +3,7 @@ import scipy.stats as st
 
 from mcmc.data_objects import Observations
 from mcmc.sampling_algorithms import MetropolisSampler
-from mcmc.sampling_distributions import UnivariateNormalSamplingDistribution
+from mcmc.sampling_distributions import NormalSamplingDistribution
 
 if __name__ == '__main__':
     # Assume we made the following observations
@@ -12,9 +12,10 @@ if __name__ == '__main__':
 
     STEPS = 5_000
     PRIOR_MEAN = 500
-    PRIOR_STANDARD_DEVIATION = 80
+    PRIOR_STANDARD_DEVIATION = 70
+    SAMPLING_STANDARD_DEVIATION = 100
 
-    sampling_distribution = UnivariateNormalSamplingDistribution(PRIOR_MEAN, PRIOR_STANDARD_DEVIATION)
+    sampling_distribution = NormalSamplingDistribution(PRIOR_MEAN, PRIOR_STANDARD_DEVIATION, SAMPLING_STANDARD_DEVIATION)
     sampler = MetropolisSampler(sampling_distribution, STEPS)
     trace = sampler.generate_markov_chain(observations)
     print(f"{trace=}")
