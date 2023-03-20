@@ -2,21 +2,26 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 
 import numpy as np
-import numpy.typing as npt
+from beartype import beartype
+from nptyping import NDArray, Shape, Float
 
+from mcmc.custom_types import NSamples, NVars
 from mcmc.data_objects._sample import Sample
 
 
 @dataclass
 class Dataset:
-    samples: List[Sample] = field(default_factory=list)
+    samples: List[Sample]
+    n_samples: NSamples = field(repr=True, init=False)
+    n_vars: NVars = field(repr=True)
 
     def __post_init__(self):
-        assert isinstance(self.samples, list)
-        self.n_vars = self._infer_n_vars()
+        self.n_samples = NSamples(len(self.samples))
 
+    @beartype
     @property
-    def data(self) -> npt.NDArray:
+    def data(self) -> NDArray[Shape["NSamples, NVars"], Float]:
+        # TODO (issue): Typing of return value not working: NSamples and NVars are not recognized as symbols
         values = [sample.value for sample in self.samples]
         values = np.asarray(values)
         values = values.reshape(-1, self.n_vars)  # multi-variate case is the default
@@ -29,13 +34,3 @@ class Dataset:
         if not end_idx:
             end_idx = len(self.samples)
         self.samples = self.samples[start_idx:end_idx]
-
-    def _infer_n_vars(self) -> int:
-        """Infers the number of variables from the first sample."""
-        first_value = self.samples[0].value
-        if isinstance(first_value, (float, int)):
-            return 1
-        elif isinstance(first_value, List):
-            return len(first_value)
-        else:
-            raise ValueError(f"The first sample has an unexpected data structure: {first_value=}")

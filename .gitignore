@@ -3,3 +3,4 @@
 venv
 results
 resources
+*__pycache__*

@@ -3,9 +3,10 @@ from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-import numpy.typing as npt
+from nptyping import NDArray, Shape, Float
 from tqdm import tqdm
 
+from mcmc.data_object_serializers import DatasetSerializer
 from mcmc.data_objects import Sample, Probability, Dataset
 from mcmc.sampling_algorithms import Sampler
 from mcmc.sampling_distributions import SamplingDistribution
@@ -48,7 +49,7 @@ class MetropolisSampler(Sampler):
     def generate_markov_chain(self, observations: Dataset) -> Dataset:
         # Start the markov chain with an initial sample
         previous_sample = self._sampling_distribution.generate_initial_random_sample()
-        self._trace = Dataset([previous_sample])  # TODO (todo): Use the DatasetSerializer for instantiating a dataset
+        self._trace = DatasetSerializer.from_sample(previous_sample)
 
         print(
             f"Generating a Markov Chain with {self._total_steps} samples "
@@ -88,7 +89,8 @@ class MetropolisSampler(Sampler):
             self._plot_trajectory(work_dir, var_data, var_idx, subtitle)
 
     @staticmethod
-    def _plot_histogram(work_dir: Path, data: npt.NDArray, var_idx: int, subtitle: str) -> None:
+    def _plot_histogram(work_dir: Path, data: NDArray[Shape["NSamples, NVars"], Float], var_idx: int, subtitle: str) -> None:
+        # TODO (issue): When using `Shape["NSamples, NVars"]`, NSamples and NVars are not recognized as symbols.
         # TODO (suggestion): Consider injecting a visualizer instance with an histogram method
         plt.figure(figsize=(16, 8))
         plt.hist(data, bins=30, density=True)
@@ -100,7 +102,8 @@ class MetropolisSampler(Sampler):
         plt.savefig(filepath)
         print(f"Saved histogram to {filepath=}.")
 
-    def _plot_trajectory(self, work_dir: Path, data: npt.NDArray, var_idx: int, subtitle: str) -> None:
+    def _plot_trajectory(self, work_dir: Path, data: NDArray[Shape["NSamples, NVars"], Float], var_idx: int, subtitle: str) -> None:
+        # TODO (issue): When using `Shape["NSamples, NVars"]`, NSamples and NVars are not recognized as symbols.
         # TODO (suggestion): Consider injecting a visualizer instance with a line plot method
         plt.figure(figsize=(16, 8))
         plt.plot(data)
